@@ -214,6 +214,8 @@ button:disabled{opacity:.45;cursor:default}
 .loadbar{position:absolute;left:20%;right:20%;top:46%;height:8px;border-radius:4px;background:rgba(255,253,244,.8);border:1px solid var(--line);overflow:hidden;z-index:3}
 .loadbar i{display:block;height:100%;width:0;background:#1f7a3a;transition:width .2s}
 .ready .loadbar{display:none}
+.tonebar.atTop{bottom:auto;top:6px;right:6px}
+.tonebar.atTop~.toast{top:66px}
 </style>
 </head>
 <body>
@@ -903,6 +905,7 @@ button:disabled{opacity:.45;cursor:default}
     var hair = !!c.colors, tc = TINTS[activeCat];
     var on = hair || activeCat === 'bg' || (tc && item(activeCat, state[activeCat]) && item(activeCat, state[activeCat]).sprite);
     bar.hidden = !on; if (!on) return;
+    bar.classList.toggle('atTop', ['shoes', 'skirt', 'shorts', 'pants', 'bag', 'dress'].indexOf(activeCat) >= 0);   // never cover what she is colouring
     fxRow.innerHTML = ''; r1.innerHTML = ''; r2.innerHTML = '';
     if (activeCat === 'bg') {
       LIGHTS.forEach(function (l) { fxRow.appendChild(chip('fx', l[1], 'Luz: ' + l[1], null, function () { change({ light: l[0] }, 'Luz: ' + l[1]); }, state.light === l[0])); });
