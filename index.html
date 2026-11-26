@@ -1,6 +1,8 @@
-
-
-
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#edf1df">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Studio 27</title>
@@ -107,14 +109,14 @@ button:disabled{opacity:.45;cursor:default}
 
 .bday.intro h2{font-size:28px}
 .bday .lead{font:italic 20px/1.4 Georgia,serif;color:#a0605b;margin:4px 0 18px}
-.bday .party{display:flex;gap:4px;align-items:flex-end;justify-content:center;height:min(46vh,340px);padding:8px;border-radius:18px;background:linear-gradient(#fdf6ec,#efd6d2)}
+.bday .party{display:flex;gap:4px;align-items:flex-end;justify-content:center;height:min(56vh,520px);padding:8px;border-radius:18px;background:linear-gradient(#fdf6ec,#efd6d2)}
 .bday .party #bdayLook{height:100%;width:auto;max-width:none;border:0;background:none;border-radius:0}
 .bday .guests{height:86%;aspect-ratio:524/1030;display:grid;place-items:end center}
 .bday .guests.pending{aspect-ratio:353/734;border-radius:16px}
 .bday .guests img{width:100%;height:100%;object-fit:contain}
 .bday .guests.pending{border:2px dashed var(--rose2);background:#fdf1ef;color:#a0605b;font:13px/1.4 system-ui;padding:10px}
 .bday .msg:empty,.bday .from:empty{display:none}
-.bday .introArt{width:78%;max-width:300px;margin:-4px auto 4px;display:block}
+.bday .introArt{width:100%;max-width:420px;margin:-6px auto 6px;display:block}
 .bday .introArt[hidden]{display:none}
 .bday .party{background-size:cover;background-position:center 60%}
 
@@ -146,10 +148,11 @@ button:disabled{opacity:.45;cursor:default}
 .bbox .tl{left:-12px;top:-12px}.bbox .tr{right:-12px;top:-12px}.bbox .bl{left:-12px;bottom:-12px}.bbox .br{right:-12px;bottom:-12px}
 .snd{position:absolute;right:8px;bottom:58px;background:rgba(255,253,244,.92);z-index:2}
 .snd .off{display:none}.snd[aria-pressed=false] .on{display:none}.snd[aria-pressed=false] .off{display:block}
+.bday .card{padding:18px 14px}
+.bday.intro h2{font-size:clamp(24px,6.6vw,32px)}
 </style>
-
-<meta name="claude:viewport-fit-sides" content="cover">
-
+</head>
+<body>
 <div id="app">
   <header class="bar">
     <h1 id="title">Studio 27 <span aria-hidden="true">✧</span></h1>
@@ -1023,3 +1026,5 @@ button:disabled{opacity:.45;cursor:default}
   });
 })();
 </script>
+</body>
+</html>
