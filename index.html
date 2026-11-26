@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#edf1df">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Studio 27</title>
-<style>:root{--olive:#344832;--olive2:#587344;--line:#a8bb91;--pist:#dcebc5;--cream:#faf8ef;--paper:#edf1df;--rose:#e9b9b4;--rose2:#c98e8a;--tile:#cfdac3;--catw:100px;--cath:84px;--barh:50px}
+<style>:root{--olive:#344832;--olive2:#587344;--line:#a8bb91;--pist:#dcebc5;--cream:#faf8ef;--paper:#edf1df;--rose:#e9b9b4;--rose2:#c98e8a;--tile:#cfdac3;--catw:100px;--cath:98px;--barh:50px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--paper);color:var(--olive);font-family:-apple-system,system-ui,"Segoe UI",sans-serif;overflow:hidden;overscroll-behavior:none}
 #app{position:fixed;inset:0;display:grid;grid-template-rows:calc(var(--barh) + env(safe-area-inset-top)) minmax(0,1fr) calc(var(--cath) + env(safe-area-inset-bottom));padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
@@ -53,10 +53,10 @@ button:disabled{opacity:.45;cursor:default}
 .bgchip{width:100%;height:100%;border-radius:10px;border:1px solid rgba(0,0,0,.08)}
 .cats{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;padding:2px 8px env(safe-area-inset-bottom);scrollbar-width:none;align-items:flex-start}
 .cats::-webkit-scrollbar{display:none}
-.cat{flex:none;width:62px;border:0;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:3px}
-.cat .th{width:58px;height:58px;border-radius:14px;border:2px solid transparent;background:var(--tile);overflow:hidden;box-shadow:0 1px 2px rgba(52,72,50,.18)}
+.cat{flex:none;width:72px;border:0;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:3px}
+.cat .th{width:68px;height:68px;border-radius:16px;border:2px solid transparent;background:var(--tile);overflow:hidden;box-shadow:0 1px 2px rgba(52,72,50,.18)}
 .cat .th canvas{width:100%;height:100%;display:block}
-.cat span{font-size:10.5px;line-height:1.1;white-space:nowrap;max-width:62px;overflow:hidden;text-overflow:ellipsis}
+.cat span{font-size:11.5px;line-height:1.1;white-space:nowrap;max-width:72px;overflow:hidden;text-overflow:ellipsis}
 .cat[aria-pressed=true] .th{border-color:var(--olive);box-shadow:0 0 0 2px var(--olive)}
 .cat[aria-pressed=true] span{font-weight:700}
 .modal{position:fixed;inset:0;background:rgba(40,48,36,.45);display:grid;place-items:center;padding:16px;z-index:10}
