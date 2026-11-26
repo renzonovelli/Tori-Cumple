@@ -150,6 +150,16 @@ button:disabled{opacity:.45;cursor:default}
 .snd .off{display:none}.snd[aria-pressed=false] .on{display:none}.snd[aria-pressed=false] .off{display:block}
 .bday .card{padding:18px 14px}
 .bday.intro h2{font-size:clamp(24px,6.6vw,32px)}
+.bday.howto h2{font-size:clamp(26px,7vw,34px);margin-bottom:6px}
+.steps{text-align:left;margin:0 0 12px;padding-left:22px;font-size:15px;line-height:1.4;color:#3d3a33}
+.steps li{margin:0 0 7px;padding-left:2px}
+.steps li::marker{color:#c98e8a;font-weight:700}
+.steps b{color:var(--olive)}
+.steps .legend{display:block;margin-top:4px;line-height:1.9}
+.steps .hi{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:9px;border:1px solid var(--line);background:#fffdf4;vertical-align:middle;margin:0 2px}
+.steps .hi svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.steps .pill{display:inline-block;background:#1f7a3a;color:#fff;border-radius:10px;padding:1px 8px;font-weight:700;font-size:14px}
+@media (max-height:700px){.steps{font-size:13.5px}.steps .hi{width:24px;height:24px}.bday.howto h2{font-size:24px}}
 </style>
 </head>
 <body>
@@ -224,6 +234,21 @@ button:disabled{opacity:.45;cursor:default}
     <h2 id="introTitle"></h2>
     <p class="lead" id="introText"></p>
     <div class="row"><button id="introGo" class="primary"></button></div>
+  </div>
+</div>
+<div class="bday howto" id="howtoModal" hidden role="dialog" aria-modal="true" aria-labelledby="howtoTitle">
+  <div class="card">
+    <h2 id="howtoTitle">Cómo jugar ✧</h2>
+    <ol class="steps">
+      <li><b>Elige una categoría</b> abajo (pelo, maquillaje, ropa, zapatos, bolsos, lugar de la fiesta…). Desliza para ver más.</li>
+      <li><b>Toca una prenda</b> a la derecha para ponértela; 🗑️ la quita.</li>
+      <li><b>Los círculos de colores</b> cambian el color de tu pelo.</li>
+      <li><b>Botones de arriba:</b>
+        <span class="legend"><span class="hi"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></span> deshacer · <span class="hi"><svg viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="m15 15 6 6"/><path d="M4 4l5 5"/></svg></span> look sorpresa · <span class="hi"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></span> empezar de nuevo · <span class="hi"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></span> mover o agrandar ropa y pelo · <span class="hi"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg></span> foto de tu look</span></li>
+      <li><span class="hi"><svg viewBox="0 0 24 24" class="face-ico"><circle cx="12" cy="12" r="8"/><path d="M9 10h.01M15 10h.01"/><path d="M9 15c1.7 1.3 4.3 1.3 6 0"/></svg></span> acerca a tu cara y <span class="hi"><svg viewBox="0 0 24 24" class="on"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg></span> apaga o prende la música.</li>
+      <li><b>Cuando estés lista</b>, toca <span class="pill">¡Lista! 🎉</span> para ir a tu fiesta y bajar la foto con Renzo y Luca.</li>
+    </ol>
+    <div class="row"><button id="howtoGo" class="primary">¡Empezar! ✧</button></div>
   </div>
 </div>
 <div class="bday" id="bdayModal" hidden role="dialog" aria-modal="true" aria-labelledby="bdayTitle">
@@ -951,7 +976,8 @@ button:disabled{opacity:.45;cursor:default}
     var I = M.intro || {};
     if (D.IART) { $('introArt').src = D.IART; $('introArt').hidden = false; }
     $('introTitle').textContent = I.title || ''; $('introText').textContent = I.text || ''; $('introGo').textContent = I.button || 'Empezar';
-    $('introGo').onclick = function () { SND.start(); SND.play('open'); $('introModal').hidden = true; toast('Cuando estés lista, toca ¡Lista! 🎉'); };
+    $('howtoGo').onclick = function () { SND.play('pick'); $('howtoModal').hidden = true; toast('Cuando estés lista, toca ¡Lista! 🎉'); };
+    $('introGo').onclick = function () { SND.start(); SND.play('open'); $('introModal').hidden = true; $('howtoModal').hidden = false; $('howtoGo').focus(); return; toast('Cuando estés lista, toca ¡Lista! 🎉'); };
     $('bdaySave').onclick = function () { SND.play('camera'); exportParty(); };
     $('bdayPlay').onclick = function () { $('bdayModal').hidden = true; $('confetti').innerHTML = ''; $('bday').focus(); };
     // edit mode: tap the title 5 times quickly, or open the page with #editar
@@ -980,7 +1006,7 @@ button:disabled{opacity:.45;cursor:default}
     sb.onclick = function () { var m = !SND.isMuted(); SND.setMuted(m); sb.setAttribute('aria-pressed', String(!m)); sb.setAttribute('aria-label', m ? 'Activar música' : 'Silenciar'); };
     $('camera').onclick = function () { SND.play('tab');  setCamera(camera === 'face' ? 'full' : 'face'); };
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') { if (!$('introModal').hidden) $('introGo').click(); if (!$('bdayModal').hidden) $('bdayPlay').click(); ['confirm', 'saved', 'hiddenModal'].forEach(function (id) { if (!$(id).hidden) closeModal(id); }); }
+      if (e.key === 'Escape') { if (!$('howtoModal').hidden) $('howtoGo').click(); if (!$('introModal').hidden) $('introGo').click(); if (!$('bdayModal').hidden) $('bdayPlay').click(); ['confirm', 'saved', 'hiddenModal'].forEach(function (id) { if (!$(id).hidden) closeModal(id); }); }
     });
     ['confirm', 'saved', 'hiddenModal'].forEach(function (id) { $(id).addEventListener('click', function (e) { if (e.target.id === id) closeModal(id); }); });
     sizeView();
