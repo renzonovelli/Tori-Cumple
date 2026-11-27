@@ -216,6 +216,11 @@ button:disabled{opacity:.45;cursor:default}
 .ready .loadbar{display:none}
 .tonebar.atTop{bottom:auto;top:6px;right:6px}
 .tonebar.atTop~.toast{top:66px}
+.flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:40}
+.flash.go{animation:flash .45s ease-out}
+@keyframes flash{0%{opacity:.9}100%{opacity:0}}
+#phFormatWrap[hidden]{display:none}
+#savedImg{touch-action:none}
 </style>
 </head>
 <body>
@@ -277,11 +282,13 @@ button:disabled{opacity:.45;cursor:default}
     <div class="row"><button id="confirmNo">Cancelar</button><button id="confirmCat">Solo esta categoría</button><button id="confirmYes" class="primary">Todo</button></div>
   </div>
 </div>
+<div class="flash" id="flash" aria-hidden="true"></div>
 <div class="modal" id="saved" hidden role="dialog" aria-modal="true" aria-labelledby="savedTitle">
   <div class="sheet">
     <h2 id="savedTitle">Tu look ✧</h2>
     <img id="savedImg" alt="Imagen del look guardado">
-    <div class="phctl"><p class="tlabel">Marco</p><div class="trow" id="phFrames"></div><p class="tlabel">Filtro</p><div class="trow" id="phFilters"></div>
+    <div class="phctl"><div id="phFormatWrap"><p class="tlabel">Formato</p><div class="trow" id="phFormat"></div></div><p class="tlabel">Marco</p><div class="trow" id="phFrames"></div><p class="tlabel">Filtro</p><div class="trow" id="phFilters"></div>
+      <p class="tlabel">Stickers</p><div class="trow" id="phStickers"></div>
       <label class="phtext"><span>Texto</span><input id="phText" maxlength="40" placeholder="Escribe algo…" autocomplete="off"></label></div>
     <p class="small">En iPhone: mantén presionada la imagen y elige «Guardar en Fotos».</p>
     <div class="row"><button id="savedClose">Cerrar</button><button id="savedCloset">Guardar en mi clóset 👗</button><a id="savedDl" class="btn primary" download="studio27-look.png">Descargar</a><button id="savedShare" class="primary" hidden>Compartir</button></div>
@@ -1400,15 +1407,38 @@ button:disabled{opacity:.45;cursor:default}
     var d = defaults(); change(d, 'Look restablecido');
     setCamera('full'); setCategory(activeCat);
   }
-  function exportLook() {
-    var c = M.fullCrop, out = document.createElement('canvas'); out.width = c[2]; out.height = c[3] + 40;
-    var x = out.getContext('2d');
-    x.fillStyle = bgColor(state.bg); x.fillRect(0, 0, out.width, out.height);
-    var eb = bgImage(state.bg); if (eb) { var er = coverRect(eb, [0, 0, out.width, out.height]); x.drawImage(eb, er[0], er[1], er[2], er[3]); }
-    drawCrop(x, full, [c[0], c[1], c[2], c[3]], c[2], c[3]);
-    lightOverlay(x, out.width, out.height);
-    showExport(out, 'studio27-look.png', 'Studio 27 ✧');
+  /* render the current look (or another state) into a canvas: crop rect in world coords -> w x h */
+  function shot(crop, w, h, st) {
+    var out = document.createElement('canvas'); out.width = w; out.height = h; var x = out.getContext('2d');
+    var cr = crop.slice(), a = w / h; if (cr[2] / cr[3] > a) { var nw = cr[3] * a; cr[0] += (cr[2] - nw) / 2; cr[2] = nw; } else { var nh = cr[2] / a; cr[1] += (cr[3] - nh) / 2; cr[3] = nh; }
+    x.fillStyle = bgColor(state.bg); x.fillRect(0, 0, w, h);
+    var eb = bgImage(state.bg); if (eb) { var br = coverRect(eb, M.fullCrop), k = w / cr[2]; x.drawImage(eb, (br[0] - cr[0]) * k, (br[1] - cr[1]) * k, br[2] * k, br[3] * k); }
+    if (st) compose(st, f, PAD);
+    drawCrop(x, full, cr, w, h);
+    if (st) compose(state, f, PAD);
+    lightOverlay(x, w, h); return out;
   }
+  var PH_MODE = 'look';
+  function buildRaw(mode) {   // 44 booth strip · 46 story 9:16 · 48 before/after
+    var c = M.fullCrop;
+    if (mode === 'story') return shot([c[0] - 60, c[1], c[2] + 120, c[3]], 1080, 1920);
+    if (mode === 'booth') {
+      var pw = 360, ph = 450, gap = 18, strip = document.createElement('canvas'); strip.width = pw + gap * 2; strip.height = (ph + gap) * 4 + gap + 60;
+      var x = strip.getContext('2d'); x.fillStyle = '#fffdf8'; x.fillRect(0, 0, strip.width, strip.height);
+      [[c[0], c[1], c[2], c[3]], [330, 20, 490, 720], [397, -10, 350, 430], [440, 60, 260, 300]].forEach(function (cr, i) { x.drawImage(shot(cr, pw, ph), gap, gap + i * (ph + gap)); });
+      x.fillStyle = '#344832'; x.font = 'italic bold 30px Georgia, serif'; x.textAlign = 'center'; x.fillText('Studio 27 ✧', strip.width / 2, strip.height - 26); return strip;
+    }
+    if (mode === 'beforeafter') {
+      var bw = 520, bh = 1080, ba = document.createElement('canvas'); ba.width = bw * 2 + 30; ba.height = bh + 90; var y = ba.getContext('2d');
+      y.fillStyle = '#fffdf8'; y.fillRect(0, 0, ba.width, ba.height);
+      var before = defaults(); before.bg = state.bg; before.light = state.light;
+      y.drawImage(shot(c, bw, bh, before), 10, 70); y.drawImage(shot(c, bw, bh), bw + 20, 70);
+      y.fillStyle = '#7a4a47'; y.font = 'bold 34px -apple-system, system-ui, sans-serif'; y.textAlign = 'center';
+      y.fillText('Antes', 10 + bw / 2, 48); y.fillText('Después ✧', bw + 20 + bw / 2, 48); return ba;
+    }
+    return shot(c, c[2], c[3] + 40);
+  }
+  function exportLook() { PH_MODE = 'look'; showExport(buildRaw('look'), 'studio27-look.png', 'Studio 27 ✧'); }
   /* party photo: location + her look + Renzo & Luca, with the birthday title */
   var familyImg = null, familyURL = null;
   if (D.ART) {   // Renzo & Luca with soft floor shadows (feet measured at x 163 / 410 on the 524x1000 art)
@@ -1484,6 +1514,13 @@ button:disabled{opacity:.45;cursor:default}
       x.globalAlpha = 1;
     }
     if (fr === 'film') { x.fillStyle = '#f4efe6'; for (var y = 18; y < H2 - 20; y += side * .55) { x.fillRect(side * .3, y, side * .4, side * .3); x.fillRect(W2 - side * .7, y, side * .4, side * .3); } }
+    (PH.stickers || []).forEach(function (st) {   // 45: stickers
+      var sz = st.s * W2, cx = side + st.x * raw.width, cy = pad + st.y * raw.height; x.save(); x.translate(cx, cy); x.rotate(st.r);
+      if (st.k === 'heart') { x.fillStyle = '#e8577e'; heart(x, 0, 0, sz * .5); } else if (st.k === 'star') { x.fillStyle = '#f4c542'; star(x, 0, 0, sz * .55); }
+      else { x.font = 'bold ' + Math.round(sz) + 'px -apple-system, "Apple Color Emoji", system-ui, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+        if (st.k === '27') { x.lineWidth = sz * .12; x.strokeStyle = '#fff'; x.strokeText('27', 0, 0); x.fillStyle = '#c0435f'; x.fillText('27', 0, 0); } else x.fillText(st.k, 0, 0); }
+      x.restore();
+    });
     if (PH.text) {
       var fs = Math.round(W2 * (fr === 'polaroid' ? .07 : .055)); x.font = 'italic bold ' + fs + 'px Georgia, serif'; x.textAlign = 'center';
       var ty = fr === 'polaroid' ? H2 - bot / 2 + fs * .35 : H2 - bot - fs * .6;
@@ -1498,6 +1535,20 @@ button:disabled{opacity:.45;cursor:default}
       list.forEach(function (o) { box.appendChild(chip('fx', o[1], o[1], null, function () { PH[key] = o[0]; buildPhotoControls(); refreshPhoto(); }, PH[key] === o[0])); });
     }
     row('phFrames', FRAMES, 'frame'); row('phFilters', FILTERS, 'filter');
+    if (!/fiesta/.test(PH.fname)) {
+      var fb = $('phFormat'); fb.innerHTML = '';
+      [['look', 'Normal'], ['story', 'Historia 9:16'], ['booth', 'Cabina (4 fotos)'], ['beforeafter', 'Antes y después']].forEach(function (o) {
+        fb.appendChild(chip('fx', o[1], o[1], null, function () { PH_MODE = o[0]; PH.raw = buildRaw(o[0]); PH.stickers = []; PH.text = o[0] === 'booth' ? '' : (PH.text || 'Studio 27 ✧'); $('phText').value = PH.text; buildPhotoControls(); refreshPhoto(); }, PH_MODE === o[0]));
+      });
+      $('phFormatWrap').hidden = false;
+    } else $('phFormatWrap').hidden = true;
+    var sb = $('phStickers'); sb.innerHTML = '';
+    ['heart', 'star', '✨', '🎂', '🎀', '🎉', '27'].forEach(function (k) {
+      sb.appendChild(chip('fx', k === 'heart' ? '♥' : k === 'star' ? '★' : k, 'Sticker', null, function () {
+        PH.stickers = PH.stickers || []; PH.stickers.push({ k: k, x: .2 + Math.random() * .6, y: .15 + Math.random() * .5, s: .1 + Math.random() * .05, r: (Math.random() - .5) * .5 }); refreshPhoto(); toast('Arrastra el sticker sobre la foto');
+      }, false));
+    });
+    sb.appendChild(chip('fx', 'Quitar stickers', 'Quitar stickers', null, function () { PH.stickers = []; refreshPhoto(); }, false));
   }
   function refreshPhoto() {
     var out = renderPhoto(), fname = PH.fname, url = out.toDataURL('image/png');
@@ -1508,8 +1559,27 @@ button:disabled{opacity:.45;cursor:default}
         if (navigator.canShare({ files: [file] })) { share.hidden = false; share.onclick = function () { navigator.share({ files: [file], title: 'Studio 27' }).catch(function () {}); }; } } catch (e) { }
     }, 'image/png');
   }
+  function flash() {   // 47: camera flash + shutter
+    SND.play('camera'); if (reduceMotion) return; var fl = $('flash'); fl.classList.remove('go'); void fl.offsetWidth; fl.classList.add('go');
+  }
+  function initStickerDrag() {   // drag the nearest sticker on the preview image
+    var img = $('savedImg'), drag = null;
+    img.addEventListener('pointerdown', function (e) {
+      if (!PH.stickers || !PH.stickers.length) return; var r = img.getBoundingClientRect(), out = renderPhoto(), sx = out.width / r.width;
+      var px = (e.clientX - r.left) * sx, py = (e.clientY - r.top) * sx, fr = PH.frame, pad = fr === 'none' ? 0 : Math.round(PH.raw.width * .06), side = fr === 'film' ? Math.round(PH.raw.width * .11) : pad;
+      var best = null, bd = 1e9; PH.stickers.forEach(function (st) { var d = Math.hypot(side + st.x * PH.raw.width - px, pad + st.y * PH.raw.height - py); if (d < bd) { bd = d; best = st; } });
+      if (best && bd < out.width * .25) { drag = { st: best, r: r, sx: sx }; e.preventDefault(); img.setPointerCapture(e.pointerId); }
+    });
+    img.addEventListener('pointermove', function (e) {
+      if (!drag) return; var st = drag.st; st.x = Math.max(0, Math.min(1, st.x + e.movementX * drag.sx / PH.raw.width)); st.y = Math.max(0, Math.min(1, st.y + e.movementY * drag.sx / PH.raw.height));
+      clearTimeout(PH.dt); PH.dt = setTimeout(refreshPhoto, 30);
+    });
+    ['pointerup', 'pointercancel'].forEach(function (ev) { img.addEventListener(ev, function () { if (drag) { drag = null; refreshPhoto(); } }); });
+    img.addEventListener('contextmenu', function (e) { if (PH.stickers && PH.stickers.length) e.preventDefault(); });
+  }
   function showExport(out, fname, text) {
-    PH.raw = out; PH.fname = fname; PH.text = text || ''; $('phText').value = PH.text;
+    PH.raw = out; PH.fname = fname; PH.text = text || ''; PH.stickers = []; $('phText').value = PH.text;
+    flash();
     $('savedTitle').textContent = /fiesta/.test(fname) ? '¡Foto de la fiesta! ✧' : 'Tu look ✧';
     buildPhotoControls(); refreshPhoto(); openModal('saved', 'savedClose');
   }
@@ -1556,7 +1626,7 @@ button:disabled{opacity:.45;cursor:default}
       var c0 = popTarget[0]; closeItemPop(); setCategory(c0);
     };
     document.addEventListener('pointerdown', function (e) { if (!$('itemPop').hidden && !$('itemPop').contains(e.target)) closeItemPop(); }, true);
-    $('save').onclick = function () { SND.play('camera'); exportLook(); };
+    $('save').onclick = function () { exportLook(); };
     function styleTip() {   // 42: gentle advice, never blocking
       var s = state, night = s.light === 'night', tips = [];
       if (s.shoes === 'none') tips.push('¿Descalza a la fiesta? 👀 Prueba unos zapatos.');
@@ -1571,7 +1641,7 @@ button:disabled{opacity:.45;cursor:default}
     $('introTitle').textContent = I.title || ''; $('introText').textContent = I.text || ''; $('introGo').textContent = I.button || 'Empezar';
     $('howtoGo').onclick = function () { SND.play('pick'); $('howtoModal').hidden = true; toast('Cuando estés lista, toca ¡Lista! 🎉'); };
     $('introGo').onclick = function () { SND.start(); SND.play('open'); $('introModal').hidden = true; $('howtoModal').hidden = false; $('howtoGo').focus(); return; toast('Cuando estés lista, toca ¡Lista! 🎉'); };
-    $('bdaySave').onclick = function () { SND.play('camera'); exportParty(); };
+    $('bdaySave').onclick = function () { exportParty(); };
     $('bdayPlay').onclick = function () { $('bdayModal').hidden = true; $('confetti').innerHTML = ''; $('bday').focus(); };
     // edit mode: tap the title 5 times quickly, or open the page with #editar
     var taps = []; $('title').addEventListener('click', function () {
@@ -1602,6 +1672,7 @@ button:disabled{opacity:.45;cursor:default}
     };
     $('hiddenRestore').onclick = function () { HIDDEN = {}; saveHidden(); closeModal('hiddenModal'); setCategory(activeCat); toast('Todo visible otra vez'); };
     $('savedClose').onclick = function () { closeModal('saved'); };
+    initStickerDrag();
     $('phText').oninput = function () { PH.text = $('phText').value.slice(0, 40); clearTimeout(PH.t); PH.t = setTimeout(refreshPhoto, 250); };
     var sb = $('sound'); sb.setAttribute('aria-pressed', String(!SND.isMuted()));
     function syncSound() { var m = SND.isMuted(); sb.setAttribute('aria-pressed', String(!m)); $('musicMute').textContent = m ? 'Activar sonido' : 'Silenciar'; }
